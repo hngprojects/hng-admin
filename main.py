@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route('/deactivate', methods=['POST'])
 def deactivate():
     token = request.form.get('token')
-    channel_id = request.form.get('channel_id')
+    user_id = request.form.get('user_id')
     text = request.form.get('text')
 
     if not text:
@@ -18,30 +18,31 @@ def deactivate():
     }
 
     users = text.split()
-    print(users)
-    response_message = f"Deactivating users: {', '.join(users)}"
+    response_message = f"<@{user_id}> is deactivating users: {', '.join(users)}"
 
     for user in users:
+        # Extract the user ID from the escaped user format <@U1234|user>
+        user_id_to_deactivate = user.split('|')[0][2:]
         deactivate_payload = {
-            "user_id": user
+            "user_id": user_id_to_deactivate
         }
         # Uncomment this section to actually send the request to Slack API
         # response = requests.post('https://slack.com/api/admin.users.remove', headers=headers, json=deactivate_payload)
         # if not response.ok:
         #     return jsonify({"error": response.text})
 
-    return jsonify({"response_type": "in_channel", "text": response_message})
+    return jsonify({"response_type": "ephemeral", "text": response_message})
 
 @app.route('/deactivate_all', methods=['POST'])
 def deactivate_all():
     token = request.form.get('token')
     channel_id = request.form.get('channel_id')
+    user_id = request.form.get('user_id')
     text = request.form.get('text')
-    print(text)
 
     exclude_channels = []
-    if text and text.startswith('exclude:'):
-        exclude_channels = text[len('exclude:'):].split(',')
+    if text and text.startswith('exclude='):
+        exclude_channels = text[len('exclude='):].split(',')
 
     if channel_id in exclude_channels:
         return jsonify({"response_type": "ephemeral", "text": "This channel is excluded from deactivation."})
@@ -61,7 +62,10 @@ def deactivate_all():
     # Simulated members for testing
     members = ['U12345678', 'U87654321']  # Remove this line and uncomment above section to fetch actual members
 
-    response_message = "Deactivating all users in the channel except in the excluded channels."
+    if exclude_channels:
+        response_message = f"<@{user_id}> is deactivating all users in the channel except in the excluded channels: {', '.join(exclude_channels)}."
+    else:
+        response_message = f"<@{user_id}> is deactivating all users in the channel."
 
     for member in members:
         deactivate_payload = {
@@ -73,7 +77,7 @@ def deactivate_all():
         # if not response.ok:
         #     return jsonify({"error": response.text})
 
-    return jsonify({"response_type": "in_channel", "text": response_message})
+    return jsonify({"response_type": "ephemeral", "text": response_message})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
