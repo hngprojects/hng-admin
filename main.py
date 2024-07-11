@@ -18,6 +18,7 @@ def deactivate():
     }
 
     users = text.split()
+    print(users)
     response_message = f"Deactivating users: {', '.join(users)}"
 
     for user in users:
@@ -36,10 +37,11 @@ def deactivate_all():
     token = request.form.get('token')
     channel_id = request.form.get('channel_id')
     text = request.form.get('text')
+    print(text)
 
     exclude_channels = []
-    if text and text.startswith('exclude='):
-        exclude_channels = text[len('exclude='):].split(',')
+    if text and text.startswith('exclude:'):
+        exclude_channels = text[len('exclude:'):].split(',')
 
     if channel_id in exclude_channels:
         return jsonify({"response_type": "ephemeral", "text": "This channel is excluded from deactivation."})
