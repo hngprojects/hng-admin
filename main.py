@@ -18,7 +18,10 @@ def deactivate():
     }
 
     users = text.split()
-    response_message = f"<@{user_id}> is deactivating users: {', '.join(users)}"
+    response_message = f"User <@{user_id}> is deactivating users: {', '.join(users)}"
+
+    # Print the text to the console
+    print(f"Deactivate command triggered by user <@{user_id}> with users: {text}")
 
     for user in users:
         # Extract the user ID from the escaped user format <@U1234|user>
@@ -31,7 +34,12 @@ def deactivate():
         # if not response.ok:
         #     return jsonify({"error": response.text})
 
-    return jsonify({"response_type": "ephemeral", "text": response_message})
+    # Return a public message
+    return jsonify({
+        "response_type": "in_channel",
+        "text": response_message,
+        "delete_original": True
+    })
 
 @app.route('/deactivate_all', methods=['POST'])
 def deactivate_all():
@@ -63,9 +71,12 @@ def deactivate_all():
     members = ['U12345678', 'U87654321']  # Remove this line and uncomment above section to fetch actual members
 
     if exclude_channels:
-        response_message = f"<@{user_id}> is deactivating all users in the channel except in the excluded channels: {', '.join(exclude_channels)}."
+        response_message = f"User <@{user_id}> is deactivating all users in the channel except in the excluded channels: {', '.join(exclude_channels)}."
     else:
-        response_message = f"<@{user_id}> is deactivating all users in the channel."
+        response_message = f"User <@{user_id}> is deactivating all users in the channel."
+
+    # Print the text to the console
+    print(f"Deactivate all command triggered by user <@{user_id}> with exclusions: {text}")
 
     for member in members:
         deactivate_payload = {
@@ -77,7 +88,12 @@ def deactivate_all():
         # if not response.ok:
         #     return jsonify({"error": response.text})
 
-    return jsonify({"response_type": "ephemeral", "text": response_message})
+    # Return a public message
+    return jsonify({
+        "response_type": "in_channel",
+        "text": response_message,
+        "delete_original": True
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
